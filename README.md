@@ -1,22 +1,27 @@
 # deeplearning-genetics
 An end-to-end model to learn genetic information for patient outcomes
 
-### [data/]
-
-## Data Generation
+## Data Generation [data/]
 
 The following creates arbitrary genetic sequences with motif(s) of interest. User can specify the size of sequence, motif pattern, and the frequency of ATCG content. User can also specify what part of the IUPAC nucleotide codes they want. 
 
-`make_data.sh` will create the dataset by calling `datagen.py` with up to 'maxA' and 'maxB' motifs. Does this for no A + no B, A, B, and AB sequences.
+`make_data.sh` will create the dataset by calling `datagen.py`; generates sequences with 0 A and 0 B motifs, only A, only B, and both A and B motifs. Currently, if a motif is specified, generates up to 20 motifs. 
 
-`datagen.py` Creates 1e4 sequences with specified A/B motifs
+`datagen.py` Creates sequences with the specified number of motifs. Present parameters include:
+- Nseqs = 1e4
+- min_seqlen = 1e3
+- max_seqlen = 1e4
+- motifA = "CGACCGAACTCC"
+- motifB = "ACATGCTTAGTA"
 
 `check_data` Ensures the number of motifs desired is in the dataset matches labels (unneeded but good to test)
 
-## Binary Classification Model
+## Binary Classification Model [models/binary_model.py]
 Identify if a specified motif is present or omitted from the data.
 
-## Multi-Classification Model
+## Multi-Classification Model [models/multi_model.py]
+Identify if only A, only B, both A/B, or no A/B motifs are present in the data.
+
 
 ### Miscellanous
 [Random Notes]  

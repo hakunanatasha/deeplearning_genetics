@@ -80,7 +80,7 @@ class MakeOHE:
         labels = {}
         countr = 0
         for k, df in self.data.items():
-            print("Encoding", k, "Classes =", countr + 1, "/", len(self.data))
+            print("Encoding label=", k, "|| Classes =", countr + 1, "/", len(self.data))
             countr += 1
             # Get training sequences
             data.update(

@@ -15,24 +15,6 @@ This can serve as a template for more complicated motif creation.
 import numpy as np
 import pandas as pd
 
-motifA = "CGACCGAACTCC"
-motifB = "ACATGCTTAGTA"
-
-savename_noAB = "../data/motif_noA_noB.csv"
-savename_A = "../data/motif_A.csv"
-savename_B = "../data/motif_B.csv"
-savename_AB = "../data/motif_AB.csv"
-
-
-# ---------------- #
-# Load Dataset
-# ---------------- #
-noab = pd.read_csv(savename_noAB)
-a = pd.read_csv(savename_A)
-b = pd.read_csv(savename_B)
-ab = pd.read_csv(savename_AB)
-
-
 def check_counts(seqs, motif, col_idx):
     """
     Check if the number of motifs are present in the sequence
@@ -47,9 +29,28 @@ def check_counts(seqs, motif, col_idx):
     return sum(t1)
 
 
-for key, value in {"No A no B": noab, "Aonly": a, "Bonly": b, "ABonly": ab}.items():
-    print("\n" + key)
-    isA = check_counts(value, motifA, 1)
-    isB = check_counts(value, motifB, 2)
-    print("Matched A:", isA == 0)
-    print("Matched B:", isB == 0)
+if __name__ == "__main__":
+    
+    motifA = "CGACCGAACTCC"
+    motifB = "ACATGCTTAGTA"
+
+    savename_noAB = "../data/motif_noA_noB.csv"
+    savename_A = "../data/motif_A.csv"
+    savename_B = "../data/motif_B.csv"
+    savename_AB = "../data/motif_AB.csv"
+
+
+    # ---------------- #
+    # Load Dataset
+    # ---------------- #
+    noab = pd.read_csv(savename_noAB)
+    a = pd.read_csv(savename_A)
+    b = pd.read_csv(savename_B)
+    ab = pd.read_csv(savename_AB)
+
+    for key, value in {"No A no B": noab, "Aonly": a, "Bonly": b, "ABonly": ab}.items():
+        print("\n" + key)
+        isA = check_counts(value, motifA, 1)
+        isB = check_counts(value, motifB, 2)
+        print("Matched A:", isA == 0)
+        print("Matched B:", isB == 0)

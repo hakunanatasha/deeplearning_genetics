@@ -20,17 +20,17 @@ def check_counts(seqs, motif, col_idx):
     Check if the number of motifs are present in the sequence
 
     Args:
-    seqs - all sequences (strs)
-    motif - the motif you want to string match
-    col_idx - the column index that counts the motifs
+    seqs: [pd.DataFrame] pandas data frame of [seqs, number_motifs_i]
+    motif: [str] the motif substr you want to string match
+    col_idx: [int] the column index that counts the motifs
     """
     N = seqs.shape[0]
-    t1 = [seqs.iloc[idx, 0].count(motif) - seqs.iloc[idx, col_idx] for idx in range(N)]
+    t1 = [seqs.iloc[idx, col_idx].count(motif) - seqs.iloc[idx][col_idx] for idx in range(N)]
     return sum(t1)
 
 
 if __name__ == "__main__":
-    
+
     motifA = "CGACCGAACTCC"
     motifB = "ACATGCTTAGTA"
 

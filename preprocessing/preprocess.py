@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 # ML Preprocessing (OHE of data + model selection)
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import StratifiedShuffleSplit
 
 # Sequence padding
@@ -75,6 +75,7 @@ class makeOHE:
                 self.pval,
             )
             self.split_traintest()
+            print("All Steps Completed!")
         else:
             print("User did not specify processing steps.")
 
@@ -123,7 +124,7 @@ class makeOHE:
         self.xdata = self.add_padding(data, self.N, self.batchfirst, self.pad_value)
 
         self.ydata = labels
-        print("Completed!")
+        print("Completed Encoding!!")
 
     def split_traintest(self):
         """
@@ -167,6 +168,18 @@ class makeOHE:
             self.ytest = yout
             self.xval = None
             self.yval = None
+
+    def translate(self, seq):
+        """
+        Given an arbitrary sequence, returns the sequence value.
+
+        Args:
+        seq - [torch.Tensor] of Nbatches x Nseq x N_alphabet
+        """
+        keep_vals = (seq.sum(axis=1) == 1).tolist() # Find non-padded values
+        s = seq[keep_vals, :].argmax(axis=1) # Slice desired positions
+        translated_seq = self.i_encoder.inverse_transform(s)
+        return "".join(translated_seq.tolist())
 
     def _check_input_list(self):
         """

@@ -120,7 +120,7 @@ class makeOHE:
             lval = self.ohe(lval, self.o_encoder, Nclasses)
             labels.update({k: lval})
 
-        print("Padding")
+        print("Making padded data in xdata and labels in ydata")
         self.xdata = self.add_padding(data, self.N, self.batchfirst, self.pad_value)
 
         self.ydata = labels

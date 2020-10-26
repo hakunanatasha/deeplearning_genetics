@@ -14,7 +14,7 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 
 
-class MakeOHE:
+class makeOHE:
     """
     Make binary one-hot-encoders
 
@@ -25,23 +25,35 @@ class MakeOHE:
     Takes the dictionary of class labels: list_of_CSV_files.
     Loads data, one-hot-encodes the (biological) sequences.
     Splits into train/test that are equally represented across classes.
+
+    Args:
+    motif_files: [dict class_label : path_to_class_data]
+    alphabet: [list(str)] list of characters that appear in the sequences
+    ptest: [float <1] percent of testing split
+    pval: [float <1] percent of validation split
+    batchfirst: [Bool] if data is returned as Nbatch x Nseq x Nfts
+    process: [Bool] user has option to run the processing commands at init()
     """
 
     def __init__(
         self,
         motif_files,
         alphabet=["A", "C", "G", "T"],
-        ptest=0.2,
+        ptest=0.1,
+        pval=0.2,
         seed=1234,
         batchfirst=True,
         pad_value=-1,
         process=True,
     ):
+        assert (ptest + pval) < 1, "p_test + p_val are too big"
+
         self.motif_files = motif_files
         self.alphabet = sorted(alphabet)  # Alphabetically sort labels
         self.alph_dict = {a: idx for idx, a in enumerate(self.alphabet)}
 
         self.ptest = ptest
+        self.pval = pval
         self.seed = seed
         self.batchfirst = batchfirst
         self.pad_value = -1
@@ -54,12 +66,23 @@ class MakeOHE:
             self.OHEncode()
 
             # Create a train/test split for each class
+            print(
+                "Train %=",
+                (1 - self.ptest - self.pval),
+                "|| Test %=",
+                self.ptest,
+                "|| Val %=",
+                self.pval,
+            )
             self.split_traintest()
+        else:
+            print("User did not specify processing steps.")
 
     def setup(self):
         """
         Loads motif data, gets the length and sets up one-hot-encodes
         """
+        self._check_input_list()
         self._load_data()
         self._get_length()
         self._setup_encoders()
@@ -116,12 +139,41 @@ class MakeOHE:
         y = np.array([k for k, v in self.N.items() for _ in range(v)])
         X = torch.cat(list(self.xdata.values()))
         labels = torch.from_numpy(np.concatenate(list(self.ydata.values())))
+
+        # First, create the Training/ [Validation + Testing] set
         stratSplit = StratifiedShuffleSplit(
-            n_splits=1, test_size=self.ptest, random_state=self.seed
+            n_splits=1,
+            test_size=round(self.ptest + self.pval, 2),
+            random_state=self.seed,
         )
-        for train_idx, test_idx in stratSplit.split(np.zeros(X.shape[0]), y):
-            self.xtrain, self.xtest = X[train_idx], X[test_idx]
-            self.ytrain, self.ytest = labels[train_idx], labels[test_idx]
+        for train_idx, out_idx in stratSplit.split(np.zeros(X.shape[0]), y):
+            self.xtrain, xout = X[train_idx], X[out_idx]
+            self.ytrain, yout = labels[train_idx], labels[out_idx]
+            ytmp = y[out_idx]
+
+        # From the reserved data, create validation/testing
+        if self.pval != 0:
+            print("Making Validation + Testing")
+            ptest_2 = self.ptest / (self.ptest + self.pval)  # Scaled Ratio
+            valSplit = StratifiedShuffleSplit(
+                n_splits=1, test_size=ptest_2, random_state=self.seed
+            )  # make a new split with remaining data
+            for val_idx, test_idx in valSplit.split(np.zeros(xout.shape[0]), ytmp):
+                self.xval, self.xtest = xout[val_idx], xout[test_idx]
+                self.yval, self.ytest = yout[val_idx], yout[test_idx]
+
+        else:
+            self.xtest = xout
+            self.ytest = yout
+            self.xval = None
+            self.yval = None
+
+    def _check_input_list(self):
+        """
+        Input dictionary of motif files should be list. Converts.
+        """
+        f = lambda v: v if isinstance(v[1], list) else (v[0], [v[1]])
+        self.motif_files = dict(map(f, self.motif_files.items()))
 
     def _load_data(self):
         """

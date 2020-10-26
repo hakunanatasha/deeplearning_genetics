@@ -33,18 +33,23 @@ b = pd.read_csv(savename_B)
 ab = pd.read_csv(savename_AB)
 
 
-def check_counts(seqs, A, B):
+def check_counts(seqs, motif, col_idx):
     """
     Check if the number of motifs are present in the sequence
+
+    Args:
+    seqs - all sequences (strs)
+    motif - the motif you want to string match
+    col_idx - the column index that counts the motifs
     """
     N = seqs.shape[0]
-    t1 = [seqs.iloc[idx, 0].count(A) - seqs.iloc[idx, 1] for idx in range(N)]
-    t2 = [seqs.iloc[idx, 0].count(B) - seqs.iloc[idx, 2] for idx in range(N)]
-    return sum(t1), sum(t2)
+    t1 = [seqs.iloc[idx, 0].count(motif) - seqs.iloc[idx, col_idx] for idx in range(N)]
+    return sum(t1)
 
 
 for key, value in {"No A no B": noab, "Aonly": a, "Bonly": b, "ABonly": ab}.items():
     print("\n" + key)
-    isA, isB = check_counts(value, motifA, motifB)
+    isA = check_counts(value, motifA, 1)
+    isB = check_counts(value, motifB, 2)
     print("Matched A:", isA == 0)
     print("Matched B:", isB == 0)

@@ -28,9 +28,10 @@ from random import shuffle
 from itertools import zip_longest
 import sys
 
-np.random.seed(1234) # Ensure you generate the same dataset each time
+np.random.seed(1234)  # Ensure you generate the same dataset each time
 
 # Generate with no motifs, generate with 1 motif A, 1 motif B, and both motifs
+
 
 def generate_random_seq(alphabet, N):
     letters, probs = zip(*list(alphabet.items()))
@@ -149,12 +150,17 @@ if __name__ == "__main__":
     alphabet = {l: 1 / len(letters) for l in letters}
 
     # Given motifs
-    motifA = "CGACCGAACTCC"
-    motifB = "ACATGCTTAGTA"
+    with open('motifs.txt','r') as f:
+        x = f.readlines()
+        motifA = x[0].strip("\n")
+        motifB = x[1].strip("\n")
+
+    #motifA = "CGACCGAACTCC"
+    #motifB = "ACATGCTTAGTA"
 
     # Length of the sequence min/max
-    min_seqlen = int(1e3)
-    max_seqlen = int(2e3)
+    min_seqlen = int(sys.argv[5]) #int(1e3)
+    max_seqlen = int(sys.argv[6]) #int(2e3)
 
     # Motif Theme, number of times motif appears, order
     mdict = {motifA: maxA, motifB: maxB}

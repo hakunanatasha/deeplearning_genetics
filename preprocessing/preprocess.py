@@ -1,5 +1,11 @@
 """
-Returns a dataset of one-hot-encoded sequences of DNA and whether the motif of interest is present or absent in the data.
+2021.01.31
+Type-hinting would make some of these structures clearer.
+
+Returns a dataset of one-hot-encoded sequences of DNA and whether the motif of 
+interest is present or absent in the data.
+
+This is done after "datagen" or "make_data.sh" is run.
 """
 
 import pandas as pd
@@ -32,7 +38,6 @@ class makeOHE:
     ptest: [float <1] percent of testing split
     pval: [float <1] percent of validation split
     batchfirst: [Bool] if data is returned as Nbatch x Nseq x Nfts
-    process: [Bool] user has option to run the processing commands at init()
     """
 
     def __init__(
@@ -44,7 +49,6 @@ class makeOHE:
         seed=1234,
         batchfirst=True,
         pad_value=-1,
-        process=True,
     ):
         assert (ptest + pval) < 1, "p_test + p_val are too big"
 
@@ -58,26 +62,23 @@ class makeOHE:
         self.batchfirst = batchfirst
         self.pad_value = -1
 
-        if process:
-            # Load all the CSVs and concatenate each class
-            self.setup()
+        # Load all the CSVs and concatenate each class
+        self.setup()
 
-            # Encode each class and pad the sequences
-            self.OHEncode()
+        # Encode each class and pad the sequences
+        self.OHEncode()
 
-            # Create a train/test split for each class
-            print(
-                "Train %=",
-                (1 - self.ptest - self.pval),
-                "|| Test %=",
-                self.ptest,
-                "|| Val %=",
-                self.pval,
-            )
-            self.split_traintest()
-            print("All Steps Completed!")
-        else:
-            print("User did not specify processing steps.")
+        # Create a train/test split for each class
+        print(
+            "Train %=",
+            (1 - self.ptest - self.pval),
+            "|| Test %=",
+            self.ptest,
+            "|| Val %=",
+            self.pval,
+        )
+        self.split_traintest()
+        print("All Steps Completed!")
 
     def setup(self):
         """
@@ -176,8 +177,8 @@ class makeOHE:
         Args:
         seq - [torch.Tensor] of Nbatches x Nseq x N_alphabet
         """
-        keep_vals = (seq.sum(axis=1) == 1).tolist() # Find non-padded values
-        s = seq[keep_vals, :].argmax(axis=1) # Slice desired positions
+        keep_vals = (seq.sum(axis=1) == 1).tolist()  # Find non-padded values
+        s = seq[keep_vals, :].argmax(axis=1)  # Slice desired positions
         translated_seq = self.i_encoder.inverse_transform(s)
         return "".join(translated_seq.tolist())
 
@@ -227,6 +228,12 @@ class makeOHE:
         """
         Pad all data sequences for each class.
         Collects all datapoints and then splits based on length of class
+
+        Inputs:
+        data: [Dict[int: dataframe]] dictionary of class label: dataset
+        N: [Dict[int: int]] dictionary of class label: number of instances
+        batchfirst: [bool] sequence padding order [Nbatch x Nseqlen x Nbases]
+        pad_value: [int] value for non-equal lengths
         """
         Ns = [0] + np.cumsum(list(N.values())).tolist()
         seqs = []
